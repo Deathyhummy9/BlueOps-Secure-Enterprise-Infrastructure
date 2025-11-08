@@ -12,4 +12,15 @@ It replicates a secure multi-VLAN corporate network, complete with **pfSense fir
 - Prepare for Network+ / CCNA / SysAdmin roles through hands-on experience.
 
 - # 🧱 Phase 1 – Virtualization & Base Network Setup
+- Phase 1 lays the foundation for the entire **Secure Enterprise Infrastructure** lab.
+
+In this phase, I:
+- Built the virtual environment in **VirtualBox**
+- Created internal networks to simulate VLANs
+- Deployed core VMs:
+  - pfSense firewall
+  - Windows Server 2022 (future Domain Controller)
+  - Windows client (Windows 11 Pro) for domain join
+  - linux mint to configure pfSense on the web gui
+ 
 
