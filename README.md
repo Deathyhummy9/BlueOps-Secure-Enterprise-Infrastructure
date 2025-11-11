@@ -33,7 +33,7 @@ This phase focuses on building the virtual environment in **VirtualBox**, deploy
 
 | VM Name | Purpose | OS Type | CPU / RAM / Disk | Network Adapters | Notes |
 |----------|----------|---------|------------------|------------------|--------|
-| **BlueOps-pfSense** | Core firewall + router | Other / FreeBSD | 2 CPU / 4 GB RAM / 30 GB VDI | <ul><li>Adapter 1 → **NAT** (WAN)</li><li>Adapter 2 → **Internal Network – LAN** (192.168.5.1/24)</li></ul> | Central routing point |
+| **BlueOps-pfSense** | Core firewall + router | Other / FreeBSD | 2 CPU / 4 GB RAM / 30 GB VDI | <ul><li>Adapter 1 → **NAT** (WAN)</li><li>Adapter 2 → **Internal Network – LAN** (192.168.5.1/24) </li> <li>Adapter 3 → **Internal Network – Vlan10Net** </li> <li>Adapter 4 → **Internal Network – Vlan20Net**  </li> </ul> | Central routing point |
 | **BlueOps-DC-Server** | Domain Controller (Windows Server 2022) | Windows Server 2022 (64-bit) | 2 CPU / 4 GB RAM / 50 GB disk | Adapter 1 → **Internal Network – Lvlan10** | Static IP `192.168.10.5` |
 | **BlueOps-Client01** | Windows 11 Pro domain workstation | Windows 11 Pro (64-bit) | 2 CPU / 4 GB RAM / 40 GB disk | Adapter 1 → **Internal Network – vlan10** | Must be Pro edition to join domain | ip 192.168.10.10
 | **BlueOps-Mint-Admin** | Linux Mint Admin VM for pfSense GUI access | Linux Mint 21.2 | 1 CPU / 2 GB RAM / 20 GB disk | Adapter 1 → **Internal Network – LAN** | Used to configure pfSense via browser | ip 192.168.5.19
