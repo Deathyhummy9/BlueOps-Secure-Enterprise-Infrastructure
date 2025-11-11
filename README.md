@@ -11,58 +11,75 @@ It replicates a secure multi-VLAN corporate network, complete with **pfSense fir
 - gain practical skills in Vpn usgae and PowerShell automation
 - Prepare for Network+ / CCNA / SysAdmin roles through hands-on experience.
 
-- # 🧱 Phase 1 – Virtualization & Base Network Setup
-- Phase 1 lays the foundation for the entire **Secure Enterprise Infrastructure** lab.
 
-In this phase, I:
-- Built the virtual environment in **VirtualBox**
-- Created internal networks to simulate VLANs
-- Deployed core VMs:
-  - pfSense firewall
-  - Windows Server 2022 (future Domain Controller)
-  - Windows client (Windows 11 Pro) for domain join
-  - linux mint to configure pfSense on the web gui
- 
-1. Virtual Machines Creation
-   -
-  - Name:'Blueops-pfSense', os: other / Free BSD,  CPU: 2, Ram:4 GB, Disk 30GB(VDI)
-  - Adapter 1 : Nat, Adapter 2: attach to "Internal Network", Namke-"VLAN10Net"(192.168.10.0/24) role "Admin/server LAN"
-  - Adapter 3 " Internal Network "- Name VLAN20Net role:user network (192.168.20.0/24)
-  - Adapter 4: "Internal Network"-Name VLAN30Net role:Guests Network
+🧱 BlueOps – Phase 1: Virtualization & Base Network Setup
 
+Phase 1 lays the foundation of the **BlueOps: Secure Enterprise Infrastructure** project.  
+This phase focuses on building the virtual environment in **VirtualBox**, deploying the core VMs, and confirming that **pfSense** is reachable as the network gateway for your lab.
 
-  -Name BlueOps-Client01, OsType:windows 11(64-bit) pro (It has to be pro to join domain)  cpu:2,RAM 4GB, Disk 40GB Adapter 1 attach to internal Network - VLAN10Net ip:192.168.5.1
-
- -Name BlueOps-DC-Server, OsType:Windows Server 2022 CPU:2, RAM: 4gb disk:50GB ip 192.168.10.10 Adapter 1 :Internal   Network VLAN10Net
-
-
-
-
-3 .pfSense Console Setup:
-    After booting pfSense: Just run through the basic set up and make the ip for lan 192.168.5.1
-    go on the linux vm make sure its on the same interal net work  and establish Vlans
-
-    
-#  BlueOps – Phase 2: VLAN Segmentation & pfSense Interface Configuration
-
-Phase 2 expands the base lab into a segmented enterprise-style network using **pfSense**.  
-Here we:
-- Create multiple LAN segments (Admin / User / Guest)
-- Assign gateways and IP ranges
-- Enable DHCP for each subnet
-- Verify internal routing and Internet connectivity    
-  
- Goals
 ---
-Simulate enterprise-grade network separation  
- Establish pfSense as the central router for all VLANs  
- Provide DHCP + NAT to each subnet  
- Prepare for firewall rule enforcement in Phase 3  
 
- 1. Establish Vlan Interfaces
- - Start with making Vlan 10 with proierty tag 10 and partent em2 repeat adding 10 to each tag and adding 1 to the parent
-   ip ranges
-| VLAN10_Admin | 192.168.10.100 – 192.168.10.199 | Admin / Server static IPs reserved below .100 |
-| VLAN20_Users | 192.168.20.100 – 192.168.20.199 | Typical user workstations |
-| VLAN30_Guests | 192.168.30.100 – 192.168.30.199 | Guest Wi-Fi style subnet |
+###  Goals
 
+- Establish a controlled, enterprise-style virtualization environment  
+- Deploy and configure **pfSense** as the central firewall/router  
+- Create **internal networks** to simulate VLANs  
+- Verify that client systems can access pfSense’s web GUI  
+- Prepare the base for multi-VLAN expansion in **Phase 2**
+
+---
+
+###  Step 1 – Create Virtual Machines in VirtualBox
+
+| VM Name | Purpose | OS Type | CPU / RAM / Disk | Network Adapters | Notes |
+|----------|----------|---------|------------------|------------------|--------|
+| **BlueOps-pfSense** | Core firewall + router | Other / FreeBSD | 2 CPU / 4 GB RAM / 30 GB VDI | <ul><li>Adapter 1 → **NAT** (WAN)</li><li>Adapter 2 → **Internal Network – LAN** (192.168.5.1/24)</li></ul> | Central routing point |
+| **BlueOps-DC-Server** | Domain Controller (Windows Server 2022) | Windows Server 2022 (64-bit) | 2 CPU / 4 GB RAM / 50 GB disk | Adapter 1 → **Internal Network – Lvlan10** | Static IP `192.168.10.5` |
+| **BlueOps-Client01** | Windows 11 Pro domain workstation | Windows 11 Pro (64-bit) | 2 CPU / 4 GB RAM / 40 GB disk | Adapter 1 → **Internal Network – vlan10** | Must be Pro edition to join domain | ip 192.168.10.10
+| **BlueOps-Mint-Admin** | Linux Mint Admin VM for pfSense GUI access | Linux Mint 21.2 | 1 CPU / 2 GB RAM / 20 GB disk | Adapter 1 → **Internal Network – LAN** | Used to configure pfSense via browser | ip 192.168.5.19
+
+> 🔸 Later in **Phase 2**, additional internal networks (`VLAN10Net`, `VLAN20Net`, `VLAN30Net`) will be added for segmented subnets.
+
+---
+
+###  Step 2 – Install pfSense
+
+1. Download the **pfSense 2.7.1 ISO** from Netgate.  
+2. In VirtualBox → **Storage**, mount the ISO to BlueOps-pfSense.  
+3. Boot → choose **Install pfSense** → accept defaults.  
+4. After reboot, choose **Option 2 – Set Interface IPs**:
+   - **WAN:** auto-assigned via DHCP (NAT)  
+   - **LAN:** `192.168.5.1/24`  
+5. Verify LAN gateway by pinging from pfSense console:
+   ```bash
+   ping 8.8.8.8      # optional Internet check
+   ping 192.168.5.1  # confirm LAN gateway
+
+
+### Step 3 – Access pfSense Web GUI
+
+Boot the Linux Mint Admin VM attached to the LAN.
+
+In terminal:
+
+ifconfig
+
+
+Confirm it received an IP (e.g. 192.168.5.10) or assign one manually.
+
+Open a browser → https://192.168.5.1
+
+Default login:
+
+Username: admin
+
+Password: pfsense
+
+Complete the setup wizard (skip WAN change)
+
+###Step 4 – Verify Connectivity
+
+From the Linux Mint terminal:
+
+ping 192.168.5.1        # pfSense gateway
+ping 8.8.8.8            # verify internet
