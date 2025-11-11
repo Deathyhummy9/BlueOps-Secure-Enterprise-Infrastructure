@@ -79,7 +79,6 @@ Complete the setup wizard (skip WAN change)
 
 ###Step 4 – Verify Connectivity
 
-From the Linux Mint terminal:
-
+From the Linux Mint terminal
 ping 192.168.5.1        # pfSense gateway
 ping 8.8.8.8            # verify internet
