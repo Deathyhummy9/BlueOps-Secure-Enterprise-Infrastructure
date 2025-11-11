@@ -12,6 +12,7 @@ It replicates a secure multi-VLAN corporate network, complete with **pfSense fir
 - Prepare for Network+ / CCNA / SysAdmin roles through hands-on experience.
 
 
+
 🧱 BlueOps – Phase 1: Virtualization & Base Network Setup
 
 Phase 1 lays the foundation of the **BlueOps: Secure Enterprise Infrastructure** project.  
@@ -235,7 +236,7 @@ Ensure all internal networks can reach the Internet:
 
 ---
 
-### 🧪 Step 6 – Validate Rule Enforcement
+###  Step 6 – Validate Rule Enforcement
 
 Run connectivity checks:
 
@@ -256,3 +257,115 @@ Copy code
 ping 8.8.8.8              # works
 ping 192.168.10.5         # blocked
 ping 192.168.5.1          # blocked
+
+
+# 🧱 BlueOps – Phase 4: Active Directory, DNS & Domain Join
+
+Phase 4 brings enterprise identity and centralized management online.  
+In this stage, I deployed **Active Directory Domain Services (AD DS)** on the Windows Server 2022 host, configured internal **DNS**, and successfully joined a Windows 11 client to the **blueops.local** domain.  
+This phase ties networking, name-resolution, and authentication together like in a real corporate network.
+
+---
+
+### 🎯 Goals
+
+- Promote Windows Server 2022 to a **Domain Controller (DC)**  
+- Configure internal **DNS** with forward + reverse zones  
+- Integrate **pfSense** with AD DNS forwarding  
+- Join Windows 11 Client to `blueops.local`  
+- Verify name resolution, logon, and group policy replication  
+
+---
+
+### ⚙️ Lab Context
+
+| Component | Role | IP | VLAN | Notes |
+|------------|------|----|------|-------|
+| **pfSense Firewall** | Gateway / DHCP / DNS Forwarder | 192.168.10.1 | VLAN10 | Forwards queries to DC DNS |
+| **BlueOps-DC-Server** | Domain Controller + DNS | 192.168.10.5 | VLAN10 | Hosts AD DS and DNS |
+| **BlueOps-Client01** | Windows 11 Pro Domain Workstation | 192.168.10.10 | VLAN10 | Joins domain |
+| **BlueOps-Mint-Admin** | Admin Management Node | 192.168.5.10 (dynamic) | LAN | pfSense GUI access only |
+
+---
+
+###  Step 1 – Install AD DS & DNS Roles
+
+1. Log into **BlueOps-DC-Server** (192.168.10.5).  
+2. Open **Server Manager → Add Roles and Features**.  
+3. Select:  
+   -  **Active Directory Domain Services**  
+   -  **DNS Server**  
+4. After install → click the yellow flag → **Promote this server to a domain controller**.  
+5. Create a new forest:  
+   - **Root Domain Name:** `blueops.local`  
+   - **NetBIOS Name:** `BLUEOPS`  
+6. Accept defaults for paths, set DSRM password, and reboot.
+
+---
+
+###  Step 2 – Verify DNS Configuration
+
+After reboot, open **DNS Manager** → confirm:
+
+- Forward Lookup Zone: `blueops.local`  
+- Reverse Lookup Zone: `10.168.192.in-addr.arpa`  
+- `dc.blueops.local` A record → 192.168.10.5  
+
+From PowerShell:
+
+nslookup dc.blueops.local
+nslookup google.com
+The first should resolve internally, the second via pfSense’s DNS forwarder.
+
+### Step 3 – Integrate pfSense with Domain DNS
+pfSense → System → General Setup.
+
+DNS Servers:
+
+Primary = 192.168.10.5 (Domain Controller)
+
+Secondary = 8.8.8.8 (Google Public DNS)
+
+DNS Resolution Order: Use the gateway for each network.
+
+Ensure DNS Resolver (unbound) is enabled.
+
+Now all VLAN10 devices will query the DC DNS first.
+
+### Step 4 – Join Windows 11 Client to Domain
+Log into BlueOps-Client01 (192.168.10.10).
+
+Confirm DNS points to the DC:
+
+powershell
+Copy code
+ipconfig /all
+→ DNS Server = 192.168.10.5
+
+Open System Properties → Rename this PC (Advanced) → Domain Join.
+
+Enter domain blueops.local.
+
+Provide credentials of a domain admin (e.g., Administrator).
+
+On success, reboot → Log in as BLUEOPS\Administrator.
+
+### Step 5 – Validation Tests
+From Client01:
+
+powershell
+Copy code
+whoami
+ → BLUEOPS\Administrator
+
+nslookup dc.blueops.local
+ → 192.168.10.5
+
+ping blueops.local
+ DNS should resolve to DC IP
+From Domain Controller:
+
+powershell
+Copy code
+Get-ADComputer -Filter *
+ Confirm Client01 appears as a domain object
