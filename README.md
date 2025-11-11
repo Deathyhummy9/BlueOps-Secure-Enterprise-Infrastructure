@@ -1,4 +1,6 @@
 #  BlueOps: Secure Enterprise Infrastructure Lab 
+   ![GettyImages-1420039880](https://github.com/user-attachments/assets/90dba6d3-5e22-49d2-a6d1-a8954bff1a4f)
+
 
 # Overview 
 A hands-on, enterprise-level IT infrastructure built entirely in **VirtualBox**.  
